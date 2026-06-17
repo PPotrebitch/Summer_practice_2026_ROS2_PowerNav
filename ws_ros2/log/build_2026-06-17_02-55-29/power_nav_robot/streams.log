@@ -1,0 +1,33 @@
+[0.869s] Invoking command in '/home/pate/Рабочий стол/Practice_PP/ws_ros2/src/power_nav_robot': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/pate/Рабочий стол/Practice_PP/ws_ros2/build/power_nav_robot/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/pate/Рабочий стол/Practice_PP/ws_ros2/install/power_nav_robot/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/power_nav_robot build --build-base /home/pate/Рабочий стол/Practice_PP/ws_ros2/build/power_nav_robot/build install --record /home/pate/Рабочий стол/Practice_PP/ws_ros2/build/power_nav_robot/install.log --single-version-externally-managed install_data
+[1.101s] running egg_info
+[1.102s] creating ../../build/power_nav_robot/power_nav_robot.egg-info
+[1.122s] writing ../../build/power_nav_robot/power_nav_robot.egg-info/PKG-INFO
+[1.122s] writing dependency_links to ../../build/power_nav_robot/power_nav_robot.egg-info/dependency_links.txt
+[1.122s] writing requirements to ../../build/power_nav_robot/power_nav_robot.egg-info/requires.txt
+[1.122s] writing top-level names to ../../build/power_nav_robot/power_nav_robot.egg-info/top_level.txt
+[1.122s] writing manifest file '../../build/power_nav_robot/power_nav_robot.egg-info/SOURCES.txt'
+[1.159s] reading manifest file '../../build/power_nav_robot/power_nav_robot.egg-info/SOURCES.txt'
+[1.159s] adding license file 'LICENSE'
+[1.160s] writing manifest file '../../build/power_nav_robot/power_nav_robot.egg-info/SOURCES.txt'
+[1.160s] running build
+[1.160s] running build_py
+[1.160s] creating /home/pate/Рабочий стол/Practice_PP/ws_ros2/build/power_nav_robot/build
+[1.160s] creating /home/pate/Рабочий стол/Practice_PP/ws_ros2/build/power_nav_robot/build/lib
+[1.160s] creating /home/pate/Рабочий стол/Practice_PP/ws_ros2/build/power_nav_robot/build/lib/power_nav_robot
+[1.160s] copying power_nav_robot/__init__.py -> /home/pate/Рабочий стол/Practice_PP/ws_ros2/build/power_nav_robot/build/lib/power_nav_robot
+[1.160s] running install
+[1.165s] running install_lib
+[1.184s] creating /home/pate/Рабочий стол/Practice_PP/ws_ros2/install/power_nav_robot/lib/python3.12/site-packages/power_nav_robot
+[1.184s] copying /home/pate/Рабочий стол/Practice_PP/ws_ros2/build/power_nav_robot/build/lib/power_nav_robot/__init__.py -> /home/pate/Рабочий стол/Practice_PP/ws_ros2/install/power_nav_robot/lib/python3.12/site-packages/power_nav_robot
+[1.184s] byte-compiling /home/pate/Рабочий стол/Practice_PP/ws_ros2/install/power_nav_robot/lib/python3.12/site-packages/power_nav_robot/__init__.py to __init__.cpython-312.pyc
+[1.185s] running install_data
+[1.185s] creating /home/pate/Рабочий стол/Practice_PP/ws_ros2/install/power_nav_robot/share/ament_index
+[1.185s] creating /home/pate/Рабочий стол/Practice_PP/ws_ros2/install/power_nav_robot/share/ament_index/resource_index
+[1.185s] creating /home/pate/Рабочий стол/Practice_PP/ws_ros2/install/power_nav_robot/share/ament_index/resource_index/packages
+[1.185s] copying resource/power_nav_robot -> /home/pate/Рабочий стол/Practice_PP/ws_ros2/install/power_nav_robot/share/ament_index/resource_index/packages
+[1.185s] copying package.xml -> /home/pate/Рабочий стол/Practice_PP/ws_ros2/install/power_nav_robot/share/power_nav_robot
+[1.185s] running install_egg_info
+[1.205s] Copying ../../build/power_nav_robot/power_nav_robot.egg-info to /home/pate/Рабочий стол/Practice_PP/ws_ros2/install/power_nav_robot/lib/python3.12/site-packages/power_nav_robot-0.0.0-py3.12.egg-info
+[1.206s] running install_scripts
+[1.334s] writing list of installed files to '/home/pate/Рабочий стол/Practice_PP/ws_ros2/build/power_nav_robot/install.log'
+[1.357s] Invoked command in '/home/pate/Рабочий стол/Practice_PP/ws_ros2/src/power_nav_robot' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/pate/Рабочий стол/Practice_PP/ws_ros2/build/power_nav_robot/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/pate/Рабочий стол/Practice_PP/ws_ros2/install/power_nav_robot/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/power_nav_robot build --build-base /home/pate/Рабочий стол/Practice_PP/ws_ros2/build/power_nav_robot/build install --record /home/pate/Рабочий стол/Practice_PP/ws_ros2/build/power_nav_robot/install.log --single-version-externally-managed install_data
