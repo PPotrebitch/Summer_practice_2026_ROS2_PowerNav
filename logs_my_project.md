@@ -152,15 +152,19 @@ ros2 launch power_nav_robot view_robot.launch.py
 После добавления необходимого, сохраняем `rviz.rviz` в папку `/rviz`
 
 
-![Вид робота в Rviz2](report_pictures/robot_veiw_rviz.png) -->
+<!-- ![Вид робота в Rviz2](report_pictures/robot_veiw_rviz.png) -->
 
-<div align="center">
+<!-- <div align="center">
   <figure>
     <img src="report_pictures/robot_veiw_rviz.png" alt="Вид робота" width="600">
     <figcaption><i>Рис. 1 — Вид робота в интерфейсе Rviz2</i></figcaption>
   </figure>
-</div>
+</div> -->
 
+<div align="center">
+  <img src="report_pictures/robot_veiw_rviz.png" alt="Вид робота" width="500" />
+  <p><i>Рис. 1 — Вид робота в интерфейсе Rviz2</i></p>
+</div>
 
 
 После написанмя кодов и до запуска не забываем про сборку: 
