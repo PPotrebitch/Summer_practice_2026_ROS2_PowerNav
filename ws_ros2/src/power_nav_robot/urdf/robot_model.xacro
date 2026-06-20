@@ -6,22 +6,6 @@
     <xacro:include filename="$(find power_nav_robot)/urdf/wheel.xacro" />
     <xacro:include filename="$(find power_nav_robot)/urdf/inertial.xacro" />
 
-    <!-- ================= ROS 2 CONTROL ================= -->
-    <ros2_control name="GazeboSimSystem" type="system">
-        <hardware>
-            <plugin>gz_ros2_control/GazeboSimSystem</plugin>
-        </hardware>
-        <joint name="wheel_left_joint">
-            <command_interface name="velocity"/>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
-        </joint>
-        <joint name="wheel_right_joint">
-            <command_interface name="velocity"/>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
-        </joint>
-    </ros2_control>
 
     <!-- ================= БАЗА РОБОТА ================= -->
     <link name='base_footprint'/>
