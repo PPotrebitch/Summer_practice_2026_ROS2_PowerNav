@@ -167,7 +167,6 @@ ros2 launch power_nav_robot view_robot.launch.py
 </div>
 
 
-
 После написанмя кодов и до запуска не забываем про сборку: 
 ```bash
 cd ~/ros2_ws
