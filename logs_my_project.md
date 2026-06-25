@@ -362,3 +362,79 @@ ros2 topic pub --once /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.2}, angul
 Ручное управление роботом с клавиатуры работает стабильно. Все компоненты системы (мост, плагин DiffDrive, сенсоры) функционируют корректно.
 
 
+
+## Глава 6: Настройка и запуск SLAM
+
+**1. Конфигурация (`slam_params.yaml`)**  
+Создан собственный файл параметров, так как стандартный конфиг ожидает фрейм `base_footprint`, а в нашей модели используется `base_link`. Ключевые настройки:
+- `base_frame: base_link` — привязка сканов лидара к основному корпусу робота.
+- `scan_topic: /scan` — источник данных лазерного дальномера.
+- `mode: mapping` — режим построения новой карты.
+- `use_sim_time: true` — синхронизация с временем симуляции Gazebo.
+
+**2. Launch-файл (`slam.launch.py`)**  
+Реализует запуск узла `async_slam_toolbox_node` с передачей пути к нашему конфигурационному файлу. Обеспечивает корректную работу жизненного цикла (Lifecycle) ноды и синхронизацию временных меток.
+
+**3. Коррекция URDF**  
+В модель робота добавлен тег `<gz_frame_id>lidar_link</gz_frame_id>` для явного указания имени фрейма лидара. Это предотвратило автоматическую генерацию составных имён Gazebo и обеспечило корректное сопоставление сканов с деревом трансформаций TF.
+
+**4. Построение и сохранение карты** 
+
+Для этого шага нужно сразу открыть 4 терминала.
+
+1) Терминал 1:
+```bash
+cd ~/ros2_ws
+colcon build
+source install/setup.bash
+ros2 launch power_nav_robot Sim_start_key.launch.py
+```
+2) Терминал 2:
+```bash
+cd ~/ros2_ws
+colcon build
+source install/setup.bash
+ros2 launch power_nav_robot slam.launch.py
+```
+3) Терминал 3:
+```bash
+rviz2
+```
+
+
+
+4) Терминал 4:
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p scale_linear:=0.3 -p scale_angular:=0.5
+```
+
+
+**Визуализация в RViz2**  
+Для контроля процесса построения карты в RViz2 выполнены следующие действия:
+- В **Global Options** выбран Fixed Frame: `map`.
+- Через кнопку **Add** добавлены дисплеи: **Map** (топик `/map`), **LaserScan** (топик `/scan`, `size=0.05`) и **RobotModel** с **TF**.
+- Дисплей Map размещён внизу списка слоёв, чтобы не перекрывать лучи лидара и модель робота.
+
+Карта построена методом ручного телеуправления. Скорость передвижения медленная, и делаем 1-3 секунды паузы после каждого поворота. Сначала едем прямо до наружной стенки. Затем едем вдоль стены по периметру против часовой стрелки. Далее совершаем обороты вокруг внутренних препятствий, чтобы явно оставить конкуры на карте. И, наконец, возвращаемся в исходную точку.
+
+
+
+<div align="center">
+  <img src="report_pictures/mapping.png" alt="Вид робота" width="500" />
+  <p><i>Рис. 3 —  SLAM в процессе </i></p>
+</div>
+
+Сохранения карты выполяется командой 
+```bash
+ros2 run nav2_map_server map_saver_cli \
+  -f ~/Practice_PP/ws_ros2/src/power_nav_robot/maps/warehouse_map \
+  --ros-args \
+  -p use_sim_time:=true \
+  -p timeout:=10.0
+```
+Сохранение выполнено через сервис `/slam_toolbox/save_map`, что гарантировало учёт замыканий петель (loop closure). Результат: файлы `warehouse_map.pgm` и `warehouse_map.yaml` в папке  `\maps` (разрешение 0.05 м/пиксель).
+
+<div align="center">
+  <img src="report_pictures/result_map.png" alt="Вид робота" width="500" />
+  <p><i>Рис. 2 — карта </i></p>
+</div>
