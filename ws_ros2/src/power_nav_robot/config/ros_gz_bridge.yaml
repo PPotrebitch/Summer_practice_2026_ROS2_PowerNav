@@ -22,23 +22,18 @@
 
 # Состояния суставов
 - ros_topic_name: "/joint_states"
-  gz_topic_name: "/world/default/model/power_nav_robot/joint_state"
+  gz_topic_name: "/world/warehouse/model/power_nav_robot/joint_state"
   ros_type_name: "sensor_msgs/msg/JointState"
   gz_type_name: "gz.msgs.Model"
   direction: GZ_TO_ROS
 
 # TF-трансформации
 - ros_topic_name: "/tf"
-  gz_topic_name: "/model/power_nav_robot/tf"
+  gz_topic_name: "/tf"
   ros_type_name: "tf2_msgs/msg/TFMessage"
   gz_type_name: "gz.msgs.Pose_V"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "/tf_static"
-  gz_topic_name: "/model/power_nav_robot/tf_static"
-  ros_type_name: "tf2_msgs/msg/TFMessage"
-  gz_type_name: "gz.msgs.Pose_V"
-  direction: GZ_TO_ROS
 
 # Лидар
 - ros_topic_name: "/scan"
