@@ -1,0 +1,10 @@
+battery_monitor:
+  ros__parameters:
+    initial_charge: 100.0
+    low_threshold: 20.0
+
+charging_station:
+  ros__parameters:
+    x: -2.0
+    y: 3.0
+    yaw: 0.0
