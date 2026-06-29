@@ -436,5 +436,107 @@ ros2 run nav2_map_server map_saver_cli \
 
 <div align="center">
   <img src="report_pictures/result_map.png" alt="Вид робота" width="500" />
-  <p><i>Рис. 2 — карта </i></p>
+  <p><i>Рис. 4 — карта </i></p>
 </div>
+
+
+
+## Глава 7: Внедрение nav2
+
+В папке `/config` был создан файл `nav2_params.yaml` в котором и указаны стардатные параметры для nav2. То есть для быстроты файл был скопирован и немного переделан. То есть скопируем стандартный файл параметров из пакета `nav2_bringup` в наш проект:
+
+```bash
+cp /opt/ros/jazzy/share/nav2_bringup/params/nav2_params.yaml ~/Practice_PP/ws_ros2/src/power_nav_robot/config/nav2_params.yaml
+```
+
+Сначало запускал launch-файл `Sim_start.launch.py`. Но потом был создан отдельный launch-файл `nav2_start.launch.py`, в котором использовался новый `rviz2_nav2.rviz`, чтобы в rviz2 вручную не приходилость добавлять карту, лидар.
+
+
+### Процесс запуска
+- Первый терминал:
+```bash
+cd ~/ros2_ws
+colcon build
+source install/setup.bash
+ros2 launch power_nav_robot nav2_start.launch.py
+```
+
+- Второй терминал:
+```bash
+colcon build
+source install/setup.bash
+ros2 launch nav2_bringup bringup_launch.py   use_sim_time:=True   map:=/home/pate/Practice_PP/ws_ros2/src/power_nav_robot/maps/warehouse_map.yaml   params_file:=/home/pate/Practice_PP/ws_ros2/src/power_nav_robot/config/nav2_params.yaml
+
+```
+
+### Как указывать?
+Для того, чтобы каждый раз не указывать начальное положение робота (кнопка `2D Pose Estimate` вверху в rviz2 окне), поскольку он всегда устанавливается в позицию $(0, 0)$, тогда в файле `nav2_params.yaml` под `amcl:` напишем:
+```bash
+# Сразу определяем, что робот находиться в точке (0, 0), вместо ручного 2D Pose Estimate
+    initial_pose:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      yaw: 0.0
+    set_initial_pose: true
+```
+
+Отправляем робота в точку:
+1) На верхней панели нажимаем кнопку `2D Goal Pose` (иконка с зеленой стрелкой и флагом).
+2) Кликаем в любую свободную точку на карте (например, в противоположный угол склада).
+3) Потянем мышкой, чтобы задать направление, в котором робот должен "припарковаться" в этой точке, и отпустим.
+
+После этого робот будет двигаться в указанную точку, объезжая препятствия.
+
+<div align="center">
+  <img src="report_pictures/nav2_go.png" alt="результат работы nav2" width="500" />
+  <p><i>Рис. 5 — результат работы nav2 </i></p>
+</div>
+
+
+## Глава 8: Зарядная станция
+
+В наш мир (`warehause.world`) добавим красный квадрат для обозначения зарядной станции. Укажим её координату в `/config/charging_station.yaml` $(x, y) = (-2, 3)$, а также начальный уровень зарядки (100%) и пороговый (20%). При заряде $\leq20\%$ роботу требуется пректратить выполнять текущую программу и поехать на зарядную станцию. 
+
+Реализуем собственную ноду `battery_monitor`. Для этого напишем код в `/power_nav_robot/bettery_monitor`. На данном этапе реализуем ручное (через командную строку) разряд батареи.
+
+Проверяем работоспособность ноды `battery_monitor`.
+
+Запускаем ноду:
+```bash
+ros2 run power_nav_robot battery_monitor --ros-args --params-file ~/Practice_PP/ws_ros2/src/power_nav_robot/config/charging_station.yaml
+```
+
+Результат:
+``` bash
+[INFO] [1782750450.509834888] [battery_monitor]: Charge: 100.0% | Is Low: False
+[INFO] [1782750450.510187029] [battery_monitor]: Battery Monitor started. Charge: 100.0%
+```
+
+В новом терминале меняем уровень зарядя и смотрим на результат в первом терминале:
+
+Новый терминал: 
+```bash
+ros2 topic pub --once /set_battery std_msgs/msg/Float32 "{data: 50.0}"
+ros2 topic pub --once /set_battery std_msgs/msg/Float32 "{data: 15.0}"
+ros2 topic pub --once /set_battery std_msgs/msg/Float32 "{data: 100.0}"
+```
+
+Рельзультат в первом терминале:
+```bash
+[INFO] [1782751614.537943187] [battery_monitor]: Battery level set to: 50.0%
+[INFO] [1782751614.538333306] [battery_monitor]: Charge: 50.0% | Is Low: False
+[INFO] [1782751670.089111826] [battery_monitor]: Battery level set to: 15.0%
+[INFO] [1782751670.089530231] [battery_monitor]: Charge: 15.0% | Is Low: True
+[INFO] [1782751709.796204791] [battery_monitor]: Battery level set to: 100.0%
+[INFO] [1782751709.796563205] [battery_monitor]: Charge: 100.0% | Is Low: False
+```
+
+Как видем из вывода, при наступления порогового случая ($\leq20\%$) поднимается флаг (Is_Low = True), а значить  нода работает нужным образом.
+
+Также дополнително можно прослушать топики:
+
+```bash
+ros2 topic echo /battery_level
+ros2 topic echo /is_battery_low
+```
