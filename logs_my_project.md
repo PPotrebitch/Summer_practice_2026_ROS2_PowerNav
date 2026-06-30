@@ -540,3 +540,209 @@ ros2 topic pub --once /set_battery std_msgs/msg/Float32 "{data: 100.0}"
 ros2 topic echo /battery_level
 ros2 topic echo /is_battery_low
 ```
+
+## Глава 9: Создания своего BT
+
+### 9.1. Цель этапа
+
+Реализовать автоматическую парковку робота на зарядную станцию при низком уровне батареи (≤20%) с использованием поведенческих деревьев (Behavior Trees, BT).
+
+
+### 9.2. Создание C++ пакета
+
+Для реализации BT на C++ создан отдельный пакет:
+
+```bash
+cd ~/Practice_PP/ws_ros2/src
+ros2 pkg create power_nav_bt_plugins \
+  --build-type ament_cmake \
+  --dependencies rclcpp std_msgs geometry_msgs behaviortree_cpp pluginlib
+```
+
+Структура пакета:
+```bash
+power_nav_bt_plugins/
+├── CMakeLists.txt              # Конфигурация сборки
+├── package.xml                 # Зависимости пакета
+├── behavior_trees/
+│   ── charge_battery_tree.xml # Описание дерева поведения
+└── src/
+    └── bt_executor.cpp         # Главный исполняемый файл с узлами BT
+```
+
+### 9.3. Архитектура дерева поведения
+
+#### Структура дерева
+
+Использовано дерево с **ReactiveSequence**, которое обеспечивает реактивность на изменение уровня заряда:
+```xml
+<root BTCPP_format="4" main_tree_to_execute="ChargingBT">
+  <BehaviorTree ID="ChargingBT">
+    <ReactiveSequence name="ChargeSequence">
+      <CheckBatteryLow name="CheckBattery"/>
+      <NavigateToCharger name="GoToCharger" x="-2.0" y="3.0"/>
+      <WaitForCharge name="WaitForCharge" target_level="80.0"/>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>
+```
+#### Логика работы:
+* `CheckBatteryLow` — проверяет топик /is_battery_low, возвращает SUCCESS при заряде ≤20%
+* `NavigateToCharger` — отправляет робота к координатам (-2.0, 3.0) через Nav2
+* `WaitForCharge` — ожидает достижения уровня заряда 80%
+
+#### Реализация узлов
+Все три узла реализованы в файле `src/bt_executor.cpp`:
+1. **CheckBatteryLow (ConditionNode)**
+  * Подписывается на `/is_battery_low`
+  * Возвращает `SUCCESS`/`FAILURE` в зависимости от состояния батареи
+2. **NavigateToCharger (StatefulActionNode)**
+  * Использует Action Client для отправки цели в Nav2
+  * Поддерживает асинхронное выполнение и отмену
+3. **WaitForCharge (ConditionNode)**
+  * Подписывается на `/battery_level`
+  * Возвращает `RUNNING` пока заряд < 80%
+
+
+### 9.4. Запуск и тестирование
+- Первый терминал (симуляция):
+```bash
+cd ~/ros2_ws
+colcon build
+source install/setup.bash
+ros2 launch power_nav_robot final.launch.py
+```
+
+- Второй терминал (навигация):
+```bash
+cd ~/ros2_ws
+colcon build
+source install/setup.bash
+ros2 launch nav2_bringup bringup_launch.py   use_sim_time:=True   map:=/home/pate/Practice_PP/ws_ros2/src/power_nav_robot/maps/warehouse_map.yaml   params_file:=/home/pate/Practice_PP/ws_ros2/src/power_nav_robot/config/nav2_params.yaml
+```
+
+- Третьий терминал (монитор батареи):
+```bash
+cd ~/ros2_ws
+colcon build
+source install/setup.bash
+ros2 run power_nav_robot battery_monitor --ros-args --params-file ~/Practice_PP/ws_ros2/src/power_nav_robot/config/charging_station.yaml
+```
+
+- Четвёртый терминал (BT Executor):
+```bash
+cd ~/ros2_ws
+colcon build
+source install/setup.bash
+ros2 run power_nav_bt_plugins bt_executor
+```
+
+- Пятый терминал (Тестирование):
+```bash
+cd ~/ros2_ws
+colcon build
+source install/setup.bash
+ros2 topic pub --once /set_battery std_msgs/msg/Float32 "{data: 15.0}"
+```
+
+#### Сценарий 1: Разрядка батареи
+
+```bash
+ros2 topic pub --once /set_battery std_msgs/msg/Float32 "{data: 15.0}"
+```
+
+Ожидаемый результат:
+- В логах BT Executor появляется последовательность:
+```bash
+[BT] CheckBatteryLow: LOW
+[BT] NavigateToCharger: START
+[BT] Sending goal to (-2.00, 3.00)
+[BT] NavigateToCharger: SUCCESS
+[BT] WaitForCharge: 15.0% / 80.0%
+```
+- Робот в Gazebo едет на красный квадрат (координаты -2.0, 3.0)
+
+#### Сценарий 2: Завершение зарядки
+
+```bash
+ros2 topic pub --once /set_battery std_msgs/msg/Float32 "{data: 100.0}"
+```
+вывод:
+```bash
+[BT] WaitForCharge: 100.0% / 80.0%
+=== Tree SUCCESS (charging complete) ===
+```
+
+
+
+<div align="center">
+  <img src="report_pictures/bt_charging.png" alt="Работа BT" width="500"/>
+  <p><i>Рис. 6 — Автоматическая парковка на зарядную станцию (в процессе)</i></p>
+</div>
+
+
+# Приложение 1 -- итоговый список пакетов, реально использованных в проекте
+
+## Симуляция и окружение (Gazebo)
+* `ros-jazzy-ros-gz` — мета-пакет для интеграции ROS 2 и Gazebo.
+* `ros-jazzy-ros-gz-sim` — launch-файлы и утилиты для запуска Gazebo Sim.
+* `ros-jazzy-ros-gz-bridge` — мост для обмена данными между ROS 2 и Gazebo Transport.
+
+## Навигация и картографирование (Nav2 & SLAM)
+* `ros-jazzy-navigation2` — основной стек автономной навигации.
+* `ros-jazzy-nav2-bringup` — launch-файлы и конфигурации для запуска Nav2.
+* `ros-jazzy-slam-toolbox` — построение карт в реальном времени (SLAM).
+
+## Управление роботом (ROS 2 Control)
+* `ros-jazzy-ros2-control` — фреймворк для управления роботами.
+* `ros-jazzy-ros2-controllers` — стандартные контроллеры (`diff_drive_controller`, `joint_state_broadcaster`).
+* `ros-jazzy-robot-state-publisher` — публикация TF-трансформаций на основе URDF.
+* `ros-jazzy-xacro` — утилита для работы с макросами в URDF.
+
+## Поведенческие деревья (Behavior Trees)
+* `ros-jazzy-behaviortree-cpp-v3` (в коде используется как `behaviortree_cpp`) — библиотека для реализации BT на C++.
+
+## Вспомогательные и отладочные инструменты
+* `ros-jazzy-rviz2` — 3D-визуализация данных.
+* `ros-jazzy-teleop-twist-keyboard` — управление роботом с клавиатуры.
+
+## Python-зависимости (пакет `power_nav_robot`)
+* `rclpy` — клиентская библиотека ROS 2 для Python.
+* `std_msgs`, `geometry_msgs` — базовые типы сообщений.
+* `nav2_msgs` — сообщения и действия для Nav2.
+* `sensor_msgs` — сообщения для лидара.
+* `visualization_msgs` — для публикации маркеров в RViz.
+
+## C++ зависимости (пакет `power_nav_bt_plugins`)
+* `rclcpp` — клиентская библиотека ROS 2 для C++.
+* `rclcpp_action` — клиент Action-серверов ROS 2.
+* `std_msgs`, `geometry_msgs`, `nav2_msgs` — типы сообщений.
+* `behaviortree_cpp` — библиотека поведенческих деревьев.
+
+---
+
+## Отброшенные пакеты (не использовались в проекте)
+
+| Пакет | Причина |
+|-------|---------|
+| `ros-jazzy-ros-gz-image` | Камера не применялась в проекте |
+| `ros-jazzy-py-trees-ros` | Перешли на реализацию BT через C++ |
+| `ros-jazzy-apriltag-detector` | Стыковка по AprilTag не реализована (упомянута только как будущее расширение) |
+| `ros-jazzy-apriltag-detector-mit` | То же самое |
+| `ros-jazzy-joy` | Управление джойстиком не использовалось |
+| `cv_bridge` | Обработка изображений не применялась |
+
+---
+
+## Итоговая команда установки
+
+```bash
+sudo apt update
+sudo apt install \
+  ros-jazzy-ros-gz ros-jazzy-ros-gz-sim ros-jazzy-ros-gz-bridge \
+  ros-jazzy-navigation2 ros-jazzy-nav2-bringup ros-jazzy-slam-toolbox \
+  ros-jazzy-ros2-control ros-jazzy-ros2-controllers \
+  ros-jazzy-robot-state-publisher ros-jazzy-xacro \
+  ros-jazzy-behaviortree-cpp-v3 \
+  ros-jazzy-rviz2 ros-jazzy-teleop-twist-keyboard
+```
