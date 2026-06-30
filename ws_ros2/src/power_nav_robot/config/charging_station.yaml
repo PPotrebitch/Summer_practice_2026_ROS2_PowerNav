@@ -7,4 +7,4 @@ charging_station:
   ros__parameters:
     x: -2.0
     y: 3.0
-    yaw: 0.0
+    yaw: -1.5708 
