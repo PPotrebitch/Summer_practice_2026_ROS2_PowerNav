@@ -1,0 +1,9 @@
+<root BTCPP_format="4" main_tree_to_execute="ChargingBT">
+  <BehaviorTree ID="ChargingBT">
+    <ReactiveSequence name="ChargeSequence">
+      <CheckBatteryLow name="CheckBattery"/>
+      <NavigateToCharger name="GoToCharger" x="-2.0" y="3.0"/>
+      <WaitForCharge name="WaitForCharge" target_level="80.0"/>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>
